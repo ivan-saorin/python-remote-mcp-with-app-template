@@ -42,12 +42,26 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 # Install dependencies
 pip install -r requirements.txt
 
-# Run the server
+# Run MCP server only
 python run_server.py
+
+# Run Web UI only (for notes management)
+python run_web_server.py
+
+# Run both servers
+python run_both.py
+# Or on Windows: run_both.bat
 
 # Test with MCP Inspector
 npx @modelcontextprotocol/inspector --url http://localhost:8000/mcp
 ```
+
+### Web Interface
+
+The Notes Management features include a web interface (similar to MCPNotes) available at:
+- **Web UI**: http://localhost:3100/
+- **Features**: Create, edit, view, and delete notes through a browser
+- **Port Configuration**: Set `WEB_PORT` environment variable (default: 3100)
 
 ## 📁 Project Structure
 
@@ -197,9 +211,19 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
+### Special Thanks to MCPNotes
+
+**A huge thank you to the creator of [MCPNotes](https://github.com/Tomatio13/MCPNotes)** for the excellent notes management implementation that inspired the notes features in this template! 🌟
+
+The notes management functionality (both MCP tools and web interface) in this template is a Python port of the original MCPNotes project. We've maintained the same user experience and functionality while adapting it to Python and the FastMCP framework.
+
+If you find the notes features useful, please also check out and star the original [MCPNotes repository](https://github.com/Tomatio13/MCPNotes)!
+
+### Other Acknowledgments
+
 - Built with [FastMCP](https://github.com/jlowin/fastmcp) for high-performance MCP implementation
 - Deployed with [CapRover](https://caprover.com/) for easy container management
-- Tested with [MCP Inspector](https://github.com/modelcontextprotocol/inspector)
+- Tested with [MCP Inspector](https://github.com/modelcontextprotocol/inspector) & [Claude Desktop](https://claude.ai/download) & [Claude Desktop](https://claude.ai/download)
 - Based on the [Model Context Protocol](https://modelcontextprotocol.io/) specification
 
 ## 💬 Support

@@ -9,7 +9,8 @@ remote-mcp-prototype/
 ├── src/                        # Source code
 │   └── remote_mcp/            # Main package
 │       ├── __init__.py        # Package initialization
-│       └── server.py          # MCP server implementation
+│       ├── server.py          # MCP server implementation
+│       └── web_app.py         # Web interface for notes
 │
 ├── deploy/                    # Deployment configurations
 │   └── caprover/             # CapRover specific files
@@ -34,7 +35,12 @@ remote-mcp-prototype/
 ├── docs/                      # Documentation
 │   └── API.md                # API reference
 │
-├── run_server.py             # Entry point
+├── run_server.py             # MCP server entry point
+├── run_web_server.py         # Web server entry point
+├── run_both.py               # Run both servers
+├── run_web.bat               # Windows: web server
+├── run_both.bat              # Windows: both servers
+├── test_notes.py             # Test script for notes
 ├── requirements.txt          # Python dependencies
 ├── README.md                 # Project documentation
 ├── PROJECT_STRUCTURE.md      # This file
@@ -47,16 +53,24 @@ remote-mcp-prototype/
 ### Core Server (`src/remote_mcp/`)
 
 **server.py**
-- MCP server implementation using Starlette
-- Tool definitions (calculator, text analyzer, task manager)
+- MCP server implementation using FastMCP
+- Tool definitions (calculator, text analyzer, task manager, notes management)
 - HTTP transport configuration
 - Critical lifespan management
+
+**web_app.py**
+- Web interface for notes management
+- Same UI/UX as MCPNotes
+- Create, edit, delete functionality
+- Shares notes database with MCP server
 
 **Key Features:**
 - Streamable HTTP transport
 - Multiple tool implementations
 - Proper error handling
 - Health check endpoints
+- Web UI on port 3100
+- Synchronized data between MCP and Web
 
 ### Entry Point (`run_server.py`)
 
@@ -157,18 +171,28 @@ Production Server
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `HOST` | Server bind address | `0.0.0.0` |
-| `PORT` | Server port | `8000` |
+| `HOST` | MCP server bind address | `0.0.0.0` |
+| `PORT` | MCP server port | `8000` |
+| `WEB_HOST` | Web server bind address | `0.0.0.0` |
+| `WEB_PORT` | Web server port | `3100` |
 | `LOG_LEVEL` | Logging verbosity | `INFO` |
 
 ## API Endpoints
 
+### MCP Server (Port 8000)
 | Endpoint | Method | Description |
 |----------|--------|-------------|
 | `/` | GET | Health check |
 | `/health` | GET | Health check |
 | `/mcp` | POST, GET | MCP protocol endpoint |
 | `/mcp/` | POST, GET | MCP protocol endpoint (with trailing slash) |
+
+### Web Server (Port 3100)
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/` | GET | Web interface home page |
+| `/notes` | POST | Create or update note |
+| `/notes/{id}` | DELETE | Delete note by ID |
 
 ## Security Considerations
 
