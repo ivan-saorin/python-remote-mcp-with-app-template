@@ -38,7 +38,7 @@ async def health_check(request):
     """Health check endpoint for CapRover"""
     return JSONResponse({
         "status": "healthy",
-        "service": "Atlas Remote MCP with Notes",
+        "service": "Notes MCP Server with Web UI",
         "version": "2.0.0",
         "timestamp": datetime.now().isoformat(),
         "services": {
