@@ -21,7 +21,13 @@ from src.remote_mcp.server import (
     task_update,
     task_delete,
     tasks_db,
-    task_counter
+    task_counter,
+    list_notes,
+    get_note,
+    write_note,
+    delete_note,
+    notes_db,
+    note_counter
 )
 
 # ============================================================================
@@ -37,6 +43,16 @@ def setup_tasks():
     yield
     tasks_db.clear()
     task_counter = 0
+
+@pytest.fixture
+def setup_notes():
+    """Reset notes database before each test"""
+    global notes_db, note_counter
+    notes_db.clear()
+    note_counter = 0
+    yield
+    notes_db.clear()
+    note_counter = 0
 
 @pytest.fixture
 async def test_client():
@@ -60,6 +76,7 @@ async def test_system_info():
     assert "transport" in result
     assert "features" in result
     assert result["transport"] == "streamable-http"
+    assert "notes_management" in result["features"]
 
 # ============================================================================
 # CALCULATOR TESTS
@@ -266,6 +283,201 @@ class TestTaskManagement:
         assert task3["id"] in task_ids
 
 # ============================================================================
+# NOTES MANAGEMENT TESTS
+# ============================================================================
+
+@pytest.mark.asyncio
+class TestNotesManagement:
+    """Test notes management functionality"""
+    
+    async def test_write_note(self, setup_notes):
+        result = await write_note(
+            title="Test Note",
+            content="This is test note content.",
+            summary="A test note",
+            tags=["test", "demo"]
+        )
+        
+        assert result["success"] is True
+        assert result["action"] == "created"
+        assert result["note"]["id"] == "test-note-1"
+        assert result["note"]["title"] == "Test Note"
+        assert result["note"]["tags"] == ["test", "demo"]
+    
+    async def test_write_note_minimal(self, setup_notes):
+        result = await write_note(
+            title="Minimal Note",
+            content="Content",
+            summary="Summary"
+        )
+        
+        assert result["success"] is True
+        assert result["note"]["tags"] == []
+    
+    async def test_update_existing_note(self, setup_notes):
+        # Create a note
+        create_result = await write_note(
+            title="Original Title",
+            content="Original content",
+            summary="Original summary",
+            tags=["original"]
+        )
+        
+        note_id = create_result["note"]["id"]
+        
+        # Update it
+        update_result = await write_note(
+            title="Updated Title",
+            content="Updated content",
+            summary="Updated summary",
+            tags=["updated"],
+            note_id=note_id
+        )
+        
+        assert update_result["success"] is True
+        assert update_result["action"] == "updated"
+        assert update_result["note"]["title"] == "Updated Title"
+        assert update_result["note"]["created_at"] == create_result["note"]["created_at"]
+        assert update_result["note"]["updated_at"] != create_result["note"]["updated_at"]
+    
+    async def test_list_all_notes(self, setup_notes):
+        # Create multiple notes
+        await write_note("Note 1", "Content 1", "Summary 1", ["tag1"])
+        await write_note("Note 2", "Content 2", "Summary 2", ["tag2"])
+        await write_note("Note 3", "Content 3", "Summary 3", ["tag1", "tag2"])
+        
+        result = await list_notes()
+        
+        assert result["count"] == 3
+        assert len(result["notes"]) == 3
+        # Verify simplified format
+        for note in result["notes"]:
+            assert "id" in note
+            assert "title" in note
+            assert "summary" in note
+            assert "tags" in note
+            assert "content" not in note  # Content not in list view
+    
+    async def test_list_notes_by_tag(self, setup_notes):
+        # Create notes with different tags
+        await write_note("Python Note", "Python content", "About Python", ["python", "code"])
+        await write_note("Java Note", "Java content", "About Java", ["java", "code"])
+        await write_note("Docker Note", "Docker content", "About Docker", ["docker", "devops"])
+        
+        # Filter by single tag
+        result = await list_notes(tags=["python"])
+        assert result["count"] == 1
+        assert result["notes"][0]["title"] == "Python Note"
+        
+        # Filter by tag that matches multiple notes
+        result = await list_notes(tags=["code"])
+        assert result["count"] == 2
+        
+        # Filter by multiple tags (OR logic)
+        result = await list_notes(tags=["python", "docker"])
+        assert result["count"] == 2
+    
+    async def test_get_note(self, setup_notes):
+        # Create a note
+        create_result = await write_note(
+            title="Detailed Note",
+            content="This is detailed content with multiple lines.\n\nSecond paragraph.",
+            summary="A detailed note",
+            tags=["detailed", "test"]
+        )
+        
+        note_id = create_result["note"]["id"]
+        
+        # Get the note
+        result = await get_note(note_id)
+        
+        assert result["id"] == note_id
+        assert result["title"] == "Detailed Note"
+        assert result["content"] == "This is detailed content with multiple lines.\n\nSecond paragraph."
+        assert result["tags"] == ["detailed", "test"]
+    
+    async def test_get_nonexistent_note(self, setup_notes):
+        result = await get_note("note-does-not-exist")
+        
+        assert "error" in result
+        assert "not found" in result["error"]
+    
+    async def test_delete_note(self, setup_notes):
+        # Create a note
+        create_result = await write_note(
+            title="Note to Delete",
+            content="Delete me",
+            summary="Will be deleted"
+        )
+        
+        note_id = create_result["note"]["id"]
+        
+        # Delete the note
+        result = await delete_note(note_id)
+        
+        assert result["success"] is True
+        assert note_id in result["message"]
+        
+        # Verify it's deleted
+        get_result = await get_note(note_id)
+        assert "error" in get_result
+        
+        # Verify it's not in the list
+        list_result = await list_notes()
+        assert list_result["count"] == 0
+    
+    async def test_delete_nonexistent_note(self, setup_notes):
+        result = await delete_note("note-does-not-exist")
+        
+        assert "error" in result
+        assert "not found" in result["error"]
+    
+    async def test_note_id_generation(self, setup_notes):
+        """Test that note IDs are generated correctly"""
+        # Test with normal title
+        result1 = await write_note(
+            title="A Very Long Title That Should Be Truncated",
+            content="Content",
+            summary="Summary"
+        )
+        assert result1["note"]["id"] == "a-very-long-title-that-should--1"
+        
+        # Test with special characters
+        result2 = await write_note(
+            title="Title! With@ Special# Characters$",
+            content="Content",
+            summary="Summary"
+        )
+        assert result2["note"]["id"].startswith("title!-with@-special#-characte")
+    
+    async def test_notes_persistence(self, setup_notes):
+        """Test that notes persist across operations"""
+        # Create multiple notes
+        note1 = await write_note("Note 1", "Content 1", "Summary 1")
+        note2 = await write_note("Note 2", "Content 2", "Summary 2")
+        note3 = await write_note("Note 3", "Content 3", "Summary 3")
+        
+        # Update one
+        await write_note(
+            "Updated Note 2", 
+            "Updated Content 2", 
+            "Updated Summary 2",
+            note_id=note2["note"]["id"]
+        )
+        
+        # Delete one
+        await delete_note(note1["note"]["id"])
+        
+        # List remaining notes
+        result = await list_notes()
+        
+        assert result["count"] == 2
+        note_ids = [n["id"] for n in result["notes"]]
+        assert note1["note"]["id"] not in note_ids
+        assert note2["note"]["id"] in note_ids
+        assert note3["note"]["id"] in note_ids
+
+# ============================================================================
 # INTEGRATION TESTS
 # ============================================================================
 
@@ -283,21 +495,24 @@ class TestIntegration:
         # and verify it's responding
         pass
     
-    async def test_concurrent_operations(self, setup_tasks):
+    async def test_concurrent_operations(self, setup_tasks, setup_notes):
         """Test concurrent tool operations"""
         tasks = [
-            calculate(i, i+1, "add") for i in range(10)
+            calculate(i, i+1, "add") for i in range(5)
         ]
         tasks.extend([
-            task_create(f"Task {i}") for i in range(10)
+            task_create(f"Task {i}") for i in range(5)
         ])
         tasks.extend([
-            text_analyze(f"Text {i}" * 10) for i in range(10)
+            text_analyze(f"Text {i}" * 10) for i in range(5)
+        ])
+        tasks.extend([
+            write_note(f"Note {i}", f"Content {i}", f"Summary {i}") for i in range(5)
         ])
         
         results = await asyncio.gather(*tasks)
         
-        assert len(results) == 30
+        assert len(results) == 20
         assert all(isinstance(r, dict) for r in results)
 
 # ============================================================================

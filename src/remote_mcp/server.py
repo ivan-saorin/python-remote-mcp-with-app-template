@@ -7,6 +7,7 @@ FIXED: No more 307 redirects
 import os
 import asyncio
 import logging
+import json
 from datetime import datetime
 from typing import Dict, Any, Optional, List
 from fastmcp import FastMCP
@@ -24,11 +25,15 @@ logger = logging.getLogger("remote-mcp")
 
 # Initialize MCP server
 mcp = FastMCP("Atlas Remote MCP")
-mcp.description = "Remote MCP server with calculator, text processing, and task management"
+mcp.description = "Remote MCP server with calculator, text processing, task management, and notes management"
 
 # Simple task database
 tasks_db = {}
 task_counter = 0
+
+# Simple notes database
+notes_db = {}
+note_counter = 0
 
 # ============================================================================
 # SYSTEM INFO
@@ -42,7 +47,7 @@ async def system_info() -> Dict[str, Any]:
         "version": "2.0.0",
         "timestamp": datetime.now().isoformat(),
         "transport": "streamable-http",
-        "features": ["calculator", "text_processing", "task_management"]
+        "features": ["calculator", "text_processing", "task_management", "notes_management"]
     }
 
 # ============================================================================
@@ -209,6 +214,133 @@ async def task_delete(task_id: str) -> Dict[str, Any]:
     del tasks_db[task_id]
     logger.info(f"Deleted task: {task_id}")
     return {"success": True, "message": f"Task {task_id} deleted"}
+
+# ============================================================================
+# NOTES MANAGEMENT
+# ============================================================================
+
+@mcp.tool()
+async def list_notes(tags: Optional[List[str]] = None) -> Dict[str, Any]:
+    """
+    Lists all notes, or search notes with tags
+    
+    Args:
+        tags: Optional tags to filter notes
+    """
+    notes = list(notes_db.values())
+    
+    # Filter by tags if provided
+    if tags:
+        notes = [n for n in notes if any(tag in n.get("tags", []) for tag in tags)]
+    
+    # Return simplified list for overview
+    simplified_notes = [{
+        "id": n["id"],
+        "title": n["title"],
+        "summary": n["summary"],
+        "tags": n["tags"]
+    } for n in notes]
+    
+    return {
+        "count": len(notes),
+        "notes": simplified_notes
+    }
+
+@mcp.tool()
+async def get_note(note_id: str) -> Dict[str, Any]:
+    """
+    Retrieves a specific note by its ID
+    
+    Args:
+        note_id: ID of the note to retrieve
+    """
+    if note_id not in notes_db:
+        return {"error": f"Note with ID '{note_id}' not found"}
+    
+    return notes_db[note_id]
+
+@mcp.tool()
+async def write_note(
+    title: str,
+    content: str,
+    summary: str,
+    tags: Optional[List[str]] = None,
+    note_id: Optional[str] = None
+) -> Dict[str, Any]:
+    """
+    Creates or updates a note
+    
+    Args:
+        title: Title of the note
+        content: Content of the note
+        summary: Short summary of the note
+        tags: Tags for the note
+        note_id: Optional ID for updating existing note
+    """
+    global note_counter, notes_db
+    
+    if not note_id:
+        # Create new note ID
+        note_counter += 1
+        # Generate ID similar to MCPNotes format
+        base_id = title.lower().replace(" ", "-")[:30]
+        note_id = f"{base_id}-{note_counter}"
+    
+    note = {
+        "id": note_id,
+        "title": title,
+        "summary": summary,
+        "tags": tags or [],
+        "content": content,
+        "created_at": notes_db.get(note_id, {}).get("created_at", datetime.now().isoformat()),
+        "updated_at": datetime.now().isoformat()
+    }
+    
+    is_update = note_id in notes_db
+    notes_db[note_id] = note
+    
+    action = "updated" if is_update else "created"
+    logger.info(f"{action.capitalize()} note: {note_id}")
+    
+    return {
+        "success": True,
+        "action": action,
+        "note": note
+    }
+
+@mcp.tool()
+async def delete_note(note_id: str) -> Dict[str, Any]:
+    """
+    Deletes a specific note by its ID
+    
+    Args:
+        note_id: ID of the note to delete
+    """
+    if note_id not in notes_db:
+        return {"error": f"Note with ID '{note_id}' not found"}
+    
+    del notes_db[note_id]
+    logger.info(f"Deleted note: {note_id}")
+    return {"success": True, "message": f"Note with ID '{note_id}' has been deleted"}
+
+# ============================================================================
+# RESOURCES - For notes subscription support
+# ============================================================================
+
+@mcp.resource("notes://notes/{note_id}")
+async def get_note_resource(note_id: str) -> str:
+    """
+    Get note content as a resource
+    
+    Args:
+        note_id: Note identifier
+    """
+    if note_id not in notes_db:
+        return f"Note not found: {note_id}"
+    
+    note = notes_db[note_id]
+    # Return note as formatted JSON string
+    return json.dumps(note, indent=2)
 
 # ============================================================================
 # ASGI APPLICATION WITH HEALTH CHECK

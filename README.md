@@ -1,7 +1,7 @@
 # 🚀 Python Remote MCP Server Template
 
-[![CI](https://github.com/YOUR_USERNAME/python-remote-mcp-template/actions/workflows/ci.yml/badge.svg)](https://github.com/YOUR_USERNAME/python-remote-mcp-template/actions/workflows/ci.yml)
-[![Docker Build](https://github.com/YOUR_USERNAME/python-remote-mcp-template/actions/workflows/docker.yml/badge.svg)](https://github.com/YOUR_USERNAME/python-remote-mcp-template/actions/workflows/docker.yml)
+[![CI](https://github.com/ivan-saorin/python-remote-mcp-with-app-template/actions/workflows/ci.yml/badge.svg)](https://github.com/ivan-saorin/python-remote-mcp-with-app-template/actions/workflows/ci.yml)
+[![Docker Build](https://github.com/ivan-saorin/python-remote-mcp-with-app-template/actions/workflows/docker.yml/badge.svg)](https://github.com/ivan-saorin/python-remote-mcp-with-app-template/actions/workflows/docker.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 
@@ -10,7 +10,7 @@ A production-ready template for building and deploying Model Context Protocol (M
 ## ✨ Features
 
 - **🎯 Ready-to-Deploy**: Pre-configured for local development, Docker, and CapRover deployment
-- **🔧 Sample Tools**: Calculator, text analyzer, and task manager examples included
+- **🔧 Sample Tools**: Calculator, text analyzer, task manager, and notes management examples included
 - **🐳 Docker Support**: Multi-stage Dockerfile for optimized container builds
 - **⚡ FastMCP Integration**: Built on FastMCP for high-performance async operations
 - **🔒 Security Examples**: Authentication, rate limiting, and input sanitization templates
@@ -204,9 +204,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 💬 Support
 
-- 📖 [Documentation](https://github.com/YOUR_USERNAME/python-remote-mcp-template/wiki)
-- 💬 [Discussions](https://github.com/YOUR_USERNAME/python-remote-mcp-template/discussions)
-- 🐛 [Issue Tracker](https://github.com/YOUR_USERNAME/python-remote-mcp-template/issues)
+- 📖 [Documentation](https://github.com/ivan-saorin/python-remote-mcp-with-app-template/wiki)
+- 💬 [Discussions](https://github.com/ivan-saorin/python-remote-mcp-with-app-template/discussions)
+- 🐛 [Issue Tracker](https://github.com/ivan-saorin/python-remote-mcp-with-app-template/issues)
 
 ## 🚦 Status
 

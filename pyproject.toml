@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "remote-mcp-server"
+name = "remote-mcp-server-with-app"
 version = "1.0.0"
 description = "A production-ready Model Context Protocol (MCP) server template for remote deployment"
 readme = "README.md"
@@ -45,10 +45,10 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/YOUR_USERNAME/python-remote-mcp-template"
-Documentation = "https://github.com/YOUR_USERNAME/python-remote-mcp-template/wiki"
-Repository = "https://github.com/YOUR_USERNAME/python-remote-mcp-template.git"
-"Bug Tracker" = "https://github.com/YOUR_USERNAME/python-remote-mcp-template/issues"
+Homepage = "https://github.com/ivan-saorin/python-remote-mcp-with-app-template"
+Documentation = "https://github.com/ivan-saorin/python-remote-mcp-with-app-template/wiki"
+Repository = "https://github.com/ivan-saorin/python-remote-mcp-with-app-template.git"
+"Bug Tracker" = "https://github.com/ivan-saorin/python-remote-mcp-with-app-template/issues"
 
 [project.scripts]
 remote-mcp = "remote_mcp.server:main"

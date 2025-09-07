@@ -73,7 +73,7 @@ All tools are prefixed with `remote:` namespace when called through MCP.
   "version": "2.0.0",
   "timestamp": "2025-09-02T10:30:00Z",
   "transport": "streamable-http",
-  "features": ["calculator", "text_processing", "task_management"]
+  "features": ["calculator", "text_processing", "task_management", "notes_management"]
 }
 ```
 
@@ -162,6 +162,104 @@ Returns an array of task objects.
 **Tool:** `remote:task_delete`  
 **Parameters:**
 - `task_id` (string, required): Task ID to delete
+
+### 5. Notes Management
+
+#### List Notes
+**Tool:** `remote:list_notes`  
+**Parameters:**
+- `tags` (array of strings, optional): Filter notes by tags
+
+**Example Response:**
+```json
+{
+  "count": 2,
+  "notes": [
+    {
+      "id": "python-api-design-1",
+      "title": "Python API Design Best Practices",
+      "summary": "Guidelines for designing RESTful APIs in Python",
+      "tags": ["python", "api", "design"]
+    },
+    {
+      "id": "mcp-integration-2",
+      "title": "MCP Integration Guide",
+      "summary": "How to integrate MCP into existing applications",
+      "tags": ["mcp", "integration"]
+    }
+  ]
+}
+```
+
+#### Get Note
+**Tool:** `remote:get_note`  
+**Parameters:**
+- `note_id` (string, required): ID of the note to retrieve
+
+**Example Response:**
+```json
+{
+  "id": "python-api-design-1",
+  "title": "Python API Design Best Practices",
+  "summary": "Guidelines for designing RESTful APIs in Python",
+  "tags": ["python", "api", "design"],
+  "content": "# Python API Design\n\n## Key Principles....",
+  "created_at": "2025-09-02T10:30:00Z",
+  "updated_at": "2025-09-02T15:45:00Z"
+}
+```
+
+#### Write Note
+**Tool:** `remote:write_note`  
+**Parameters:**
+- `title` (string, required): Note title
+- `content` (string, required): Note content (supports markdown)
+- `summary` (string, required): Brief summary of the note
+- `tags` (array of strings, optional): Tags for categorization
+- `note_id` (string, optional): Specific ID for updating existing note
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "action": "created",
+  "note": {
+    "id": "docker-deployment-3",
+    "title": "Docker Deployment Guide",
+    "summary": "Step-by-step guide for Docker deployments",
+    "tags": ["docker", "deployment", "devops"],
+    "content": "# Docker Deployment\n\n## Prerequisites....",
+    "created_at": "2025-09-02T16:00:00Z",
+    "updated_at": "2025-09-02T16:00:00Z"
+  }
+}
+```
+
+#### Delete Note
+**Tool:** `remote:delete_note`  
+**Parameters:**
+- `note_id` (string, required): ID of the note to delete
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "message": "Note with ID 'docker-deployment-3' has been deleted"
+}
+```
+
+#### Resources Support
+
+Notes can be accessed as resources with URIs in the format `notes://notes/{note_id}`. This enables:
+- Subscribing to note updates
+- Direct resource access
+- Integration with resource-aware tools
+
+**Resource Format:**
+```
+notes://notes/python-api-design-1
+notes://notes/mcp-integration-2
+```
 
 ## Testing with MCP Inspector
 
@@ -292,6 +390,10 @@ app = Starlette(
 | task_list | < 15ms |
 | task_update | < 20ms |
 | task_delete | < 15ms |
+| list_notes | < 20ms |
+| get_note | < 10ms |
+| write_note | < 25ms |
+| delete_note | < 15ms |
 
 ### Throughput
 - Requests per second: 1000+ (local)
