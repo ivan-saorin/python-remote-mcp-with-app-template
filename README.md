@@ -42,13 +42,18 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 # Install dependencies
 pip install -r requirements.txt
 
-# Run MCP server only
+# Option 1: Run unified server (MCP + Web on same port) - BEST FOR CAPROVER
+python run_unified_server.py
+# Or on Windows: run_unified.bat
+# Access: Web UI at http://localhost:8000/, MCP at http://localhost:8000/mcp
+
+# Option 2: Run MCP server only
 python run_server.py
 
-# Run Web UI only (for notes management)
+# Option 3: Run Web UI only (for notes management)
 python run_web_server.py
 
-# Run both servers
+# Option 4: Run both servers on separate ports
 python run_both.py
 # Or on Windows: run_both.bat
 
@@ -59,9 +64,10 @@ npx @modelcontextprotocol/inspector --url http://localhost:8000/mcp
 ### Web Interface
 
 The Notes Management features include a web interface (similar to MCPNotes) available at:
-- **Web UI**: http://localhost:3100/
+- **Unified Server** (recommended for CapRover): http://localhost:8000/
+- **Standalone Web UI**: http://localhost:3100/
 - **Features**: Create, edit, view, and delete notes through a browser
-- **Port Configuration**: Set `WEB_PORT` environment variable (default: 3100)
+- **Port Configuration**: Set `WEB_PORT` environment variable for standalone (default: 3100)
 
 ## 📁 Project Structure
 
@@ -147,6 +153,16 @@ docker push your-registry/mcp-server:latest
 ```
 
 ## ⚓ CapRover Deployment
+
+### Important: Unified Server for CapRover
+
+CapRover only exposes one port per app. To access both the MCP endpoint and web interface, we provide a **unified server** that serves both on the same port:
+
+- **Web Interface**: `https://your-app.your-domain.com/`
+- **MCP Endpoint**: `https://your-app.your-domain.com/mcp`
+- **Health Check**: `https://your-app.your-domain.com/health`
+
+The Dockerfile automatically uses the unified server for CapRover deployments.
 
 ### Prerequisites
 - CapRover instance running

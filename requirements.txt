@@ -4,13 +4,14 @@
 fastmcp  # Latest version
 
 # Web framework and server
-starlette
+starlette  # Also needed for form parsing
 uvicorn[standard]
 
 # Utilities
 python-dotenv
 pyyaml
 aiofiles
+python-multipart  # For form data in web interface
 
 # HTTP client (if needed for external calls)
 httpx

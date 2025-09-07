@@ -1,5 +1,5 @@
 # Atlas Remote MCP for CapRover
-# Production-ready Docker image with multi-stage build
+# Production-ready Docker image with unified server (MCP + Web on same port)
 FROM python:3.11-slim AS builder
 
 # Install build dependencies
@@ -37,6 +37,7 @@ WORKDIR /app
 # Copy application code (paths relative to repo root)
 COPY src/ ./src/
 COPY run_server.py ./
+COPY run_unified_server.py ./
 
 # Health check for CapRover
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
@@ -45,5 +46,5 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 # Expose port 80 for CapRover
 EXPOSE 80
 
-# Run the server
-CMD ["python", "run_server.py"]
+# Run the unified server (MCP + Web)
+CMD ["python", "run_unified_server.py"]

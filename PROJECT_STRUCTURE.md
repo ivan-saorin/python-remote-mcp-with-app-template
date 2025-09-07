@@ -10,7 +10,8 @@ remote-mcp-prototype/
 │   └── remote_mcp/            # Main package
 │       ├── __init__.py        # Package initialization
 │       ├── server.py          # MCP server implementation
-│       └── web_app.py         # Web interface for notes
+│       ├── web_app.py         # Web interface for notes
+│       └── unified_server.py  # Unified server (MCP + Web)
 │
 ├── deploy/                    # Deployment configurations
 │   └── caprover/             # CapRover specific files
@@ -38,8 +39,10 @@ remote-mcp-prototype/
 ├── run_server.py             # MCP server entry point
 ├── run_web_server.py         # Web server entry point
 ├── run_both.py               # Run both servers
+├── run_unified_server.py     # Unified server (CapRover)
 ├── run_web.bat               # Windows: web server
 ├── run_both.bat              # Windows: both servers
+├── run_unified.bat           # Windows: unified server
 ├── test_notes.py             # Test script for notes
 ├── requirements.txt          # Python dependencies
 ├── README.md                 # Project documentation
@@ -64,12 +67,18 @@ remote-mcp-prototype/
 - Create, edit, delete functionality
 - Shares notes database with MCP server
 
+**unified_server.py**
+- Combines MCP and Web on single port
+- Perfect for CapRover deployment
+- Routes requests to appropriate handlers
+- Single health check for both services
+
 **Key Features:**
 - Streamable HTTP transport
 - Multiple tool implementations
 - Proper error handling
 - Health check endpoints
-- Web UI on port 3100
+- Web UI on port 3100 (standalone) or same port (unified)
 - Synchronized data between MCP and Web
 
 ### Entry Point (`run_server.py`)
@@ -79,6 +88,23 @@ Simple entry point that:
 - Initializes the Starlette app
 - Starts the Uvicorn server
 - Handles graceful shutdown
+
+### Additional Entry Points
+
+**run_unified_server.py**
+- Runs unified server (MCP + Web on same port)
+- Used for CapRover deployment
+- Default choice for single-port environments
+
+**run_web_server.py**
+- Runs standalone web interface
+- Useful for development/testing
+- Default port: 3100
+
+**run_both.py**
+- Runs both servers on separate ports
+- MCP on 8000, Web on 3100
+- Good for local development
 
 ### Deployment (`deploy/`)
 
@@ -215,12 +241,20 @@ Production Server
 
 1. **Local Development**
    ```bash
-   python run_server.py
+   # For CapRover-like environment (single port)
+   python run_unified_server.py
+   
+   # For separate services
+   python run_both.py
    ```
 
 2. **Testing**
    ```bash
+   # Test MCP endpoint
    npx @modelcontextprotocol/inspector --url http://localhost:8000/mcp
+   
+   # Test web interface
+   # Open http://localhost:8000/ in browser
    ```
 
 3. **Commit & Push**
