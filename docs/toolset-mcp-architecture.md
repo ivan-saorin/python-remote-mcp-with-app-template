@@ -58,8 +58,8 @@ Standard response structure for all tool methods:
 class ToolResponse:
     success: bool
     data: Dict[str, Any] = None
-    error: Optional[str] = None
-    metadata: Optional[Dict[str, Any]] = None
+    error: str = None
+    metadata: Dict[str, Any] = None
     
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for JSON serialization"""
@@ -195,12 +195,12 @@ async def your_tool_name(param1: str) -> Dict[str, Any]:
 
 ## Important FastMCP Considerations
 
-### Never Use Optional[] in FastMCP
+### Never Use ] in FastMCP
 
 **❌ DON'T DO THIS:**
 ```python
 @mcp.tool()
-async def my_tool(param1: str, param2: Optional[str]) -> Dict[str, Any]:
+async def my_tool(param1: str, param2: str) -> Dict[str, Any]:
     # This will cause issues in FastMCP
 ```
 
@@ -408,7 +408,7 @@ The toolset-mcp architecture provides:
 - Type safety with proper parameter handling
 
 Remember:
-- Never use `Optional[]` in FastMCP parameters
+- Never use `]` in FastMCP parameters
 - Always convert string inputs to expected types
 - Return ToolResponse from feature methods
 - Convert responses to dict in server methods

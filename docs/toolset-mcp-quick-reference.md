@@ -2,14 +2,14 @@
 
 ## FastMCP Gotchas & Best Practices
 
-### ❌ NEVER Use Optional[] in FastMCP
+### ❌ NEVER Use ] in FastMCP
 
 ```python
 # WRONG - This will break in FastMCP
 from typing import Optional
 
 @mcp.tool()
-async def my_tool(required_param: str, optional_param: Optional[str]) -> Dict[str, Any]:
+async def my_tool(required_param: str, optional_param: str) -> Dict[str, Any]:
     pass
 
 # CORRECT - Use default values instead
@@ -239,7 +239,7 @@ return {
 
 ## Remember
 
-- ✅ Use `param: str = None` instead of `Optional[str]`
+- ✅ Use `param: str = None` instead of `str]`
 - ✅ Convert string inputs to expected types
 - ✅ Always call `.to_dict()` on ToolResponse
 - ✅ Handle lists as comma-separated strings
